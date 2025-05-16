@@ -4,9 +4,9 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.example.demo.Entity.nave;
+import com.example.demo.Entity.camion;
 
-public class NaveDao {
+public class CamionDao {
     private final String url = "jdbc:mysql://localhost:3306/terminal";
     private final String user = "root";
     private final String password = "";
@@ -15,28 +15,27 @@ public class NaveDao {
         return DriverManager.getConnection(url, user, password);
     }
 
-    public void inserisci(String nome, String tipo) {
-        String sql = "INSERT INTO nave (nome, tipo) VALUES (?, ?)";
+    public void inserisci(String targa, String modello) {
+        String sql = "INSERT INTO camion (targa, modello) VALUES (?, ?)";
         try (Connection conn = getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, nome);
-            stmt.setString(2, tipo);
+            stmt.setString(1, targa);
+            stmt.setString(2, modello);
             stmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
-    public List<nave> visualizza() {
-        List<nave> lista = new ArrayList<>();
-        String sql = "SELECT * FROM nave";
+    public List<camion> visualizza() {
+        List<camion> lista = new ArrayList<>();
+        String sql = "SELECT * FROM camion";
         try (Connection conn = getConnection(); Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
-                nave n = new nave(
-                    rs.getInt("ID"),
-                    rs.getString("nome"),
-                    rs.getString("tipo")
+                camion c = new camion(
+                    rs.getString("targa"),
+                    rs.getString("modello")
                 );
-                lista.add(n);
+                lista.add(c);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -44,10 +43,10 @@ public class NaveDao {
         return lista;
     }
 
-    public void cancella(int id) {
-        String sql = "DELETE FROM nave WHERE ID = ?";
+    public void cancella(String targa) {
+        String sql = "DELETE FROM camion WHERE targa = ?";
         try (Connection conn = getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, id);
+            stmt.setString(1, targa);
             stmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
