@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.example.demo.Entity.cliente;
+import com.example.demo.Entity.utente;
+
 
 public class ClienteDao {
     private final String url = "jdbc:mysql://localhost:3306/terminal";
@@ -61,4 +63,28 @@ public class ClienteDao {
             e.printStackTrace();
         }
     }
+
+    public utente loginCliente(String mail, String passwordInput) {
+        String sql = "SELECT * FROM cliente WHERE mail = ? AND password = ?";
+    
+        try (Connection conn = getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, mail);
+            stmt.setString(2, passwordInput);
+    
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return new utente(
+                        rs.getInt("ID"),
+                        rs.getString("mail"),
+                        rs.getString("password")
+                    );
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    
+        return null; // Login fallito
+    }
+    
 }
