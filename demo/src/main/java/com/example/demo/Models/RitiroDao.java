@@ -17,10 +17,10 @@ public class RitiroDao {
         return DriverManager.getConnection(url, user, password);
     }
 
-    public void inserisci(int targaId, int autistaId, double peso, String data) {
+    public void inserisci(String targa, int autistaId, double peso, String data) {
         String sql = "INSERT INTO ritiro (targa, autista, peso, data) VALUES (?, ?, ?, ?)";
         try (Connection conn = getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, targaId);
+            stmt.setString(1, targa);
             stmt.setInt(2, autistaId);
             stmt.setDouble(3, peso);
             stmt.setString(4, data);

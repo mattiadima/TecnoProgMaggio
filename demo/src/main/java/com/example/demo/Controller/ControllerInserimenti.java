@@ -96,7 +96,7 @@ public class ControllerInserimenti {
     }
 
     @GetMapping("/ritiro")
-    public String inserisciRitiro(@RequestParam int camion, @RequestParam int autista, @RequestParam double peso, @RequestParam String data) {
+    public String inserisciRitiro(@RequestParam String camion, @RequestParam int autista, @RequestParam double peso, @RequestParam String data) {
         ritiroDao.inserisci(camion, autista, peso, data);
         return "Ritiro inserito con successo!";
     }

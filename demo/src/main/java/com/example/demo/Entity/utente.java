@@ -3,7 +3,7 @@ package com.example.demo.Entity;
 public class utente {
     private int ID;
     private String username;
-    private String password;
+    private String privilegio;
     
     public int getID() {
         return ID;
@@ -14,12 +14,12 @@ public class utente {
     }
 
     public String getPassword() {
-        return password;
+        return privilegio;
     }
 
-    public utente(int iD, String username, String password) {
+    public utente(int iD, String username, String privilegio) {
         this.ID = iD;
         this.username = username;
-        this.password = password;
+        this.privilegio = privilegio;
     }
 }

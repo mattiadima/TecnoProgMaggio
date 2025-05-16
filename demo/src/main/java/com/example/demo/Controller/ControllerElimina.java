@@ -19,61 +19,61 @@ public class ControllerElimina {
     buonoDao buonoDao = new buonoDao();
     RitiroDao ritiroDao = new RitiroDao();
 
-    @DeleteMapping("/autista")
+    @GetMapping("/autista")
     public String eliminaAutista(@RequestParam int id) {
         autistaDao.cancella(id);
         return "Autista eliminato con successo!";
     }
 
-    @DeleteMapping("/camion")
+    @GetMapping("/camion")
     public String eliminaCamion(@RequestParam String targa) {
         camionDao.cancella(targa);
         return "Camion eliminato con successo!";
     }
 
-    @DeleteMapping("/cliente")
+    @GetMapping("/cliente")
     public String eliminaCliente(@RequestParam int id) {
         clienteDao.cancella(id);
         return "Cliente eliminato con successo!";
     }
 
-    @DeleteMapping("/fornitore")
+    @GetMapping("/fornitore")
     public String eliminaFornitore(@RequestParam int id) {
         fornitoreDao.cancella(id);
         return "Fornitore eliminato con successo!";
     }
 
-    @DeleteMapping("/nave")
+    @GetMapping("/nave")
     public String eliminaNave(@RequestParam int id) {
         naveDao.cancella(id);
         return "Nave eliminata con successo!";
     }
 
-    @DeleteMapping("/porto")
+    @GetMapping("/porto")
     public String eliminaPorto(@RequestParam int id) {
         portoDao.cancella(id);
         return "Porto eliminato con successo!";
     }
 
-    @DeleteMapping("/viaggio")
+    @GetMapping("/viaggio")
     public String eliminaViaggio(@RequestParam int id) {
         viaggioDao.cancella(id);
         return "Viaggio eliminato con successo!";
     }
 
-    @DeleteMapping("/polizza")
+    @GetMapping("/polizza")
     public String eliminaPolizza(@RequestParam int id) {
         polizzaDao.cancella(id);
         return "Polizza eliminata con successo!";
     }
 
-    @DeleteMapping("/buono")
+    @GetMapping("/buono")
     public String eliminaBuono(@RequestParam int id) {
         buonoDao.cancella(id);
         return "Buono eliminato con successo!";
     }
 
-    @DeleteMapping("/ritiro")
+    @GetMapping("/ritiro")
     public String eliminaRitiro(@RequestParam int id) {
         ritiroDao.cancella(id);
         return "Ritiro eliminato con successo!";
