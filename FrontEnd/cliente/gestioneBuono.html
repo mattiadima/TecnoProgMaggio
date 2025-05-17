@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Gestione Buono</title>
+    <script>
+        let polizze = [];
+
+        function controllaAccessoCliente() {
+            const utente = JSON.parse(localStorage.getItem("utente"));
+
+            if (!utente || utente.privilegio !== "cliente") {
+                alert("Accesso negato. Effettua il login come cliente.");
+                window.location.href = "../login.html";
+            }
+        }
+
+        function caricaPolizze() {
+            fetch("http://localhost:8080/visualizza/polizza")
+                .then(res => res.json())
+                .then(data => {
+                    polizze = data;
+                    const select = document.getElementById("polizzaBuono");
+                    select.innerHTML = ""; // svuota prima
+                    if (polizze.length === 0) {
+                        select.innerHTML = "<option value=''>Nessuna polizza disponibile</option>";
+                        return;
+                    }
+                    polizze.forEach(p => {
+                        // Assumiamo che ogni polizza abbia id e nome (modifica se necessario)
+                        const option = document.createElement("option");
+                        option.value = p.id;
+                        option.textContent = p.nome || `Polizza ${p.id}`;
+                        select.appendChild(option);
+                    });
+                })
+                .catch(() => {
+                    const select = document.getElementById("polizzaBuono");
+                    select.innerHTML = "<option value=''>Errore nel caricamento polizze</option>";
+                });
+        }
+
+        function inserisciBuono() {
+            const data = document.getElementById("dataBuono").value.trim();
+            const polizzaId = document.getElementById("polizzaBuono").value;
+            const peso = document.getElementById("pesoBuono").value.trim();
+
+            if (!data || !polizzaId || !peso || isNaN(peso)) {
+                document.getElementById("output").textContent = "⚠️ Inserisci tutti i campi correttamente (peso deve essere un numero)";
+                return;
+            }
+
+            const url = `http://localhost:8080/inserisci/buono?data=${encodeURIComponent(data)}&polizza=${encodeURIComponent(polizzaId)}&peso=${peso}`;
+            fetch(url)
+                .then(res => res.text())
+                .then(() => {
+                    document.getElementById("output").textContent = "✅ Buono inserito.";
+                })
+                .catch(() => {
+                    document.getElementById("output").textContent = "❌ Errore durante l'inserimento del buono.";
+                });
+        }
+
+        function visualizzaBuoni() {
+            fetch("http://localhost:8080/visualizza/buono")
+                .then(res => res.json())
+                .then(data => {
+                    if (!Array.isArray(data) || data.length === 0) {
+                        document.getElementById("output").textContent = "⚠️ Nessun buono trovato.";
+                        return;
+                    }
+
+                    let html = "<table border='1'><tr><th>ID</th><th>Data</th><th>Polizza</th><th>Peso</th></tr>";
+                        data.forEach(buono => {
+                                const polizzaObj = polizze.find(p => p.ID == buono.polizza.id);
+                                const polizzaId = polizzaObj ? polizzaObj.ID : "N/D";
+
+                                html += `<tr>
+                                    <td>${buono.id}</td>
+                                    <td>${buono.data}</td>
+                                    <td>${polizzaId}</td>
+                                    <td>${buono.peso}</td>
+                                </tr>`;
+                                });
+
+                    html += "</table>";
+                    document.getElementById("output").innerHTML = html;
+                })
+                .catch(() => {
+                    document.getElementById("output").textContent = "❌ Errore durante la visualizzazione.";
+                });
+        }
+
+        function eliminaBuono() {
+            const id = document.getElementById("idElimina").value.trim();
+
+            if (!id || isNaN(id) || parseInt(id) <= 0) {
+                document.getElementById("output").textContent = "⚠️ Inserisci un ID valido per eliminare un buono.";
+                return;
+            }
+
+            const url = `http://localhost:8080/elimina/buono?id=${id}`;
+            fetch(url)
+                .then(res => res.text())
+                .then(() => {
+                    document.getElementById("output").textContent = "✅ Buono eliminato.";
+                })
+                .catch(() => {
+                    document.getElementById("output").textContent = "❌ Errore durante l'eliminazione del buono.";
+                });
+        }
+
+        function tornaIndietro() {
+            window.location.href = "indexCliente.html";
+        }
+
+        window.onload = function () {
+            controllaAccessoCliente();
+            caricaPolizze();
+        };
+    </script>
+</head>
+
+<body>
+    <h2>Gestione Buono</h2>
+
+    <h3>➕ Inserisci Buono</h3>
+    Data: <input type="date" id="dataBuono"><br>
+    Polizza:
+    <select id="polizzaBuono">
+        <option>Caricamento...</option>
+    </select><br>
+    Peso: <input type="number" id="pesoBuono" step="0.50" min="1"><br>
+    <button onclick="inserisciBuono()">Inserisci</button>
+
+    <h3>📋 Visualizza Buoni</h3>
+    <button onclick="visualizzaBuoni()">Visualizza</button>
+
+    <h3>🗑️ Elimina Buono</h3>
+    ID: <input type="number" id="idElimina" min="1">
+    <button onclick="eliminaBuono()">Elimina</button>
+
+    <br><br>
+    <button onclick="tornaIndietro()">Torna Indietro</button>
+
+    <h3>Output:</h3>
+    <div id="output"></div>
+</body>
+
+</html>

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Gestione Autisti</title>
+  <script>
+    function controllaAccessoCliente() {
+      const utente = JSON.parse(localStorage.getItem("utente"));
+
+      // Se non esiste utente o non è cliente, reindirizza
+      if (!utente || utente.privilegio !== "cliente") {
+        alert("Accesso negato. Effettua il login come cliente.");
+        window.location.href = "../login.html";
+      }
+    }
+
+    function inserisciAutista() {
+      const nome = document.getElementById("nomeAutista").value.trim();
+      const username = document.getElementById("usernameAutista").value.trim();
+      const password = document.getElementById("passwordAutista").value.trim();
+
+      if (!nome || !username || !password) {
+        document.getElementById("output").textContent = "⚠️ Inserisci tutti i campi correttamente";
+        return;
+      }
+
+      const url = `http://localhost:8080/inserisci/autista?nome=${encodeURIComponent(nome)}&username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`;
+      fetch(url)
+        .then(res => res.text())
+        .then(() => {
+          document.getElementById("output").textContent = "✅ Autista inserito.";
+        })
+        .catch(() => {
+          document.getElementById("output").textContent = "❌ Errore durante l'inserimento dell'autista.";
+        });
+    }
+
+    function visualizzaAutisti() {
+      fetch("http://localhost:8080/visualizza/autista")
+        .then(res => res.json())
+        .then(data => {
+          if (!Array.isArray(data) || data.length === 0) {
+            document.getElementById("output").textContent = "⚠️ Nessun autista trovato.";
+            return;
+          }
+
+          let html = "<table border='1'><tr><th>ID</th><th>Nome</th><th>Username</th><th>Password</th></tr>";
+          data.forEach(autista => {
+            html += `<tr>
+              <td>${autista.id}</td>
+              <td>${autista.nome}</td>
+              <td>${autista.username}</td>
+              <td>${autista.password}</td>
+            </tr>`;
+          });
+          html += "</table>";
+          document.getElementById("output").innerHTML = html;
+        })
+        .catch(() => {
+          document.getElementById("output").textContent = "❌ Errore durante la visualizzazione.";
+        });
+    }
+
+    function eliminaAutista() {
+      const id = document.getElementById("idElimina").value.trim();
+
+      if (!id || isNaN(id) || parseInt(id) <= 0) {
+        document.getElementById("output").textContent = "⚠️ Inserisci un ID valido per eliminare un autista.";
+        return;
+      }
+
+      const url = `http://localhost:8080/elimina/autista?id=${id}`;
+      fetch(url)
+        .then(res => res.text())
+        .then(() => {
+          document.getElementById("output").textContent = "✅ Autista eliminato.";
+        })
+        .catch(() => {
+          document.getElementById("output").textContent = "❌ Errore durante l'eliminazione dell'autista.";
+        });
+    }
+
+    function tornaIndietro() {
+      window.location.href = "indexCliente.html";
+    }
+  </script>
+</head>
+<body onload="controllaAccessoCliente()">
+  <h2>Gestione Autisti</h2>
+
+  <h3>➕ Inserisci Autista</h3>
+  Nome: <input type="text" id="nomeAutista"><br>
+  Username: <input type="text" id="usernameAutista"><br>
+  Password: <input type="password" id="passwordAutista"><br>
+  <button onclick="inserisciAutista()">Inserisci</button>
+
+  <h3>📋 Visualizza Autisti</h3>
+  <button onclick="visualizzaAutisti()">Visualizza</button>
+
+  <h3>🗑️ Elimina Autista</h3>
+  ID: <input type="number" id="idElimina" min="1">
+  <button onclick="eliminaAutista()">Elimina</button>
+
+  <br><br>
+  <button onclick="tornaIndietro()">Torna Indietro</button>
+
+  <h3>Output:</h3>
+  <div id="output"></div>
+</body>
+</html>

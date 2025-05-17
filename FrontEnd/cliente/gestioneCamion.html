@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Gestione Camion</title>
+  <script>
+    function controllaAccessoCliente() {
+      const utente = JSON.parse(localStorage.getItem("utente"));
+
+      // Se non esiste utente o non è cliente, reindirizza
+      if (!utente || utente.privilegio !== "cliente") {
+        alert("Accesso negato. Effettua il login come cliente.");
+        window.location.href = "../login.html";
+      }
+    }
+
+    function inserisciCamion() {
+      const targa = document.getElementById("targaCamion").value.trim();
+      const modello = document.getElementById("modelloCamion").value.trim();
+
+      if (!targa || !modello) {
+        document.getElementById("output").textContent = "⚠️ Inserisci tutti i campi correttamente";
+        return;
+      }
+
+      const url = `http://localhost:8080/inserisci/camion?targa=${encodeURIComponent(targa)}&modello=${encodeURIComponent(modello)}`;
+      fetch(url)
+        .then(res => res.text())
+        .then(() => {
+          document.getElementById("output").textContent = "✅ Camion inserito.";
+        })
+        .catch(() => {
+          document.getElementById("output").textContent = "❌ Errore durante l'inserimento del camion.";
+        });
+    }
+
+    function visualizzaCamion() {
+      fetch("http://localhost:8080/visualizza/camion")
+        .then(res => res.json())
+        .then(data => {
+          if (!Array.isArray(data) || data.length === 0) {
+            document.getElementById("output").textContent = "⚠️ Nessun camion trovato.";
+            return;
+          }
+
+          let html = "<table border='1'><tr><th>Targa</th><th>Modello</th></tr>";
+          data.forEach(camion => {
+            html += `<tr>
+              <td>${camion.targa}</td>
+              <td>${camion.modello}</td>
+            </tr>`;
+          });
+          html += "</table>";
+          document.getElementById("output").innerHTML = html;
+        })
+        .catch(() => {
+          document.getElementById("output").textContent = "❌ Errore durante la visualizzazione.";
+        });
+    }
+
+    function eliminaCamion() {
+      const id = document.getElementById("idElimina").value.trim();
+
+      if (!id) {
+        document.getElementById("output").textContent = "⚠️ Inserisci una targa valida per eliminare un camion.";
+        return;
+      }
+
+      const url = `http://localhost:8080/elimina/camion?targa=${id}`;
+      fetch(url)
+        .then(res => res.text())
+        .then(() => {
+          document.getElementById("output").textContent = "✅ Camion eliminato.";
+        })
+        .catch(() => {
+          document.getElementById("output").textContent = "❌ Errore durante l'eliminazione del camion.";
+        });
+    }
+
+    function tornaIndietro() {
+      window.location.href = "indexCliente.html";
+    }
+  </script>
+</head>
+<body onload="controllaAccessoCliente()">
+  <h2>Gestione Camion</h2>
+
+  <h3>➕ Inserisci Camion</h3>
+  Targa: <input type="text" id="targaCamion"><br>
+  Modello: <input type="text" id="modelloCamion"><br>
+  <button onclick="inserisciCamion()">Inserisci</button>
+
+  <h3>📋 Visualizza Camion</h3>
+  <button onclick="visualizzaCamion()">Visualizza</button>
+
+  <h3>🗑️ Elimina Camion</h3>
+  Targa: <input type="text" id="idElimina">
+  <button onclick="eliminaCamion()">Elimina</button>
+
+  <br><br>
+  <button onclick="tornaIndietro()">Torna Indietro</button>
+
+  <h3>Output:</h3>
+  <div id="output"></div>
+</body>
+</html>

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <title>Gestione Ritiro</title>
+  <script>
+    function controllaAccessoCliente() {
+      const utente = JSON.parse(localStorage.getItem("utente"));
+      if (!utente || utente.privilegio !== "cliente") {
+        alert("Accesso negato. Effettua il login come cliente.");
+        window.location.href = "../login.html";
+      }
+    }
+
+    let veicoli = [];
+    let autisti = [];
+
+    window.onload = function() {
+      controllaAccessoCliente();
+      caricaVeicoli();
+      caricaAutisti();
+    };
+
+    function caricaVeicoli() {
+      fetch("http://localhost:8080/visualizza/camion")
+        .then(res => res.json())
+        .then(data => {
+          veicoli = data;
+          const select = document.getElementById("targa");
+          select.innerHTML = "<option value=''>-- Seleziona Targa --</option>";
+          data.forEach(v => {
+            select.innerHTML += `<option value="${v.targa}">${v.targa}</option>`;
+          });
+        })
+        .catch(() => alert("Errore nel caricamento dei veicoli."));
+    }
+
+    function caricaAutisti() {
+      fetch("http://localhost:8080/visualizza/autista")
+        .then(res => res.json())
+        .then(data => {
+          autisti = data;
+          const select = document.getElementById("autista");
+          select.innerHTML = "<option value=''>-- Seleziona Autista --</option>";
+          data.forEach(a => {
+            select.innerHTML += `<option value="${a.id}">${a.nome}</option>`;
+          });
+        })
+        .catch(() => alert("Errore nel caricamento degli autisti."));
+    }
+
+    function inserisciRitiro() {
+      const targa = document.getElementById("targa").value;
+      const autistaId = document.getElementById("autista").value;
+      const peso = document.getElementById("peso").value.trim();
+      const data = document.getElementById("data").value;
+
+      if (!targa || !autistaId || !peso || isNaN(peso) || !data) {
+        document.getElementById("output").textContent = "⚠️ Compila tutti i campi correttamente (peso deve essere un numero).";
+        return;
+      }
+
+      const url = `http://localhost:8080/inserisci/ritiro?camion=${encodeURIComponent(targa)}&autista=${encodeURIComponent(autistaId)}&peso=${peso}&data=${encodeURIComponent(data)}`;
+      fetch(url)
+        .then(res => res.text())
+        .then(() => {
+          document.getElementById("output").textContent = "✅ Ritiro inserito.";
+        })
+        .catch(() => {
+          document.getElementById("output").textContent = "❌ Errore durante l'inserimento del ritiro.";
+        });
+    }
+
+    function visualizzaRitiri() {
+      fetch("http://localhost:8080/visualizza/ritiro")
+        .then(res => res.json())
+        .then(data => {
+          if (!Array.isArray(data) || data.length === 0) {
+            document.getElementById("output").textContent = "⚠️ Nessun ritiro trovato.";
+            return;
+          }
+
+          let html = `<table border='1'>
+            <tr><th>ID</th><th>Targa</th><th>Autista</th><th>Peso</th><th>Data</th></tr>`;
+
+          data.forEach(ritiro => {
+            // Trovo nome autista dall'id
+            const autistaObj = autisti.find(a => a.id == ritiro.autista.id);
+            const nomeAutista = autistaObj ? autistaObj.nome : "N/D";
+        
+            html += `<tr>
+              <td>${ritiro.id}</td>
+              <td>${ritiro.targa.targa}</td>
+              <td>${nomeAutista}</td>
+              <td>${ritiro.peso}</td>
+              <td>${ritiro.data}</td>
+            </tr>`;
+          });
+
+          html += "</table>";
+          document.getElementById("output").innerHTML = html;
+        })
+        .catch(() => {
+          document.getElementById("output").textContent = "❌ Errore durante la visualizzazione dei ritiri.";
+        });
+    }
+
+    function eliminaRitiro() {
+      const id = document.getElementById("idElimina").value.trim();
+      if (!id || isNaN(id) || parseInt(id) <= 0) {
+        document.getElementById("output").textContent = "⚠️ Inserisci un ID valido per eliminare un ritiro.";
+        return;
+      }
+
+      const url = `http://localhost:8080/elimina/ritiro?id=${id}`;
+      fetch(url)
+        .then(res => res.text())
+        .then(() => {
+          document.getElementById("output").textContent = "✅ Ritiro eliminato.";
+        })
+        .catch(() => {
+          document.getElementById("output").textContent = "❌ Errore durante l'eliminazione del ritiro.";
+        });
+    }
+
+    function tornaIndietro() {
+      window.location.href = "indexCliente.html";
+    }
+  </script>
+</head>
+<body>
+  <h2>Gestione Ritiro</h2>
+
+  <h3>➕ Inserisci Ritiro</h3>
+
+  Targa:
+  <select id="targa"></select><br><br>
+
+  Autista:
+  <select id="autista"></select><br><br>
+
+  Peso: <input type="number" id="peso" step="0.01" min="0.01"><br><br>
+
+  Data: <input type="date" id="data"><br><br>
+
+  <button onclick="inserisciRitiro()">Inserisci</button>
+
+  <h3>📋 Visualizza Ritiri</h3>
+  <button onclick="visualizzaRitiri()">Visualizza</button>
+
+  <h3>🗑️ Elimina Ritiro</h3>
+  ID: <input type="number" id="idElimina" min="1">
+  <button onclick="eliminaRitiro()">Elimina</button>
+
+  <br><br>
+  <button onclick="tornaIndietro()">Torna Indietro</button>
+
+  <h3>Output:</h3>
+  <div id="output"></div>
+</body>
+</html>
