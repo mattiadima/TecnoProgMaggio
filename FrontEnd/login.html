@@ -13,12 +13,12 @@
 }
 
 
-function gestisciLogin(user) {
+function gestisciLogin() {
 
   const username = document.getElementById("username").value;
   const password = document.getElementById("password").value;
 
-  const url = `http://localhost:8080/login/${user}?mail=${username}&password=${password}`;
+  const url = `http://localhost:8080/login?mail=${username}&password=${password}`;
 
   fetch(url)
     .then(response => {
@@ -39,20 +39,14 @@ function gestisciLogin(user) {
 
     function reindirizza(privilegio) {
   if (privilegio === "admin") {
-    window.location.href = "admin.html";
+    window.location.href = "Admin/indexAdmin.html";
   } else if (privilegio === "cliente") {
-    window.location.href = "cliente.html";
+    window.location.href = "cliente/indexCliente.html";
   } else if (privilegio === "fornitore") {
-    window.location.href = "fornitore.html";
+    window.location.href = "fornitore/indexfornitore.html";
   } else {
     document.getElementById("messaggio").textContent = "Privilegio non riconosciuto.";
   }
-}
-
-function login() {
-    gestisciLogin("cliente");
-    gestisciLogin("fornitore");
-    gestisciLogin("admin");
 }
 
   </script>
@@ -67,7 +61,7 @@ function login() {
     <label for="password">Password:</label><br>
     <input type="password" id="password" name="password"><br><br>
 
-    <button type="button" onclick="login()">Accedi</button>
+    <button type="button" onclick="gestisciLogin()">Accedi</button>
   </form>
 
   <p id="messaggio"></p>

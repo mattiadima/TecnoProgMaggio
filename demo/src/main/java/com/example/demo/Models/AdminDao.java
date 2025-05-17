@@ -18,19 +18,19 @@ public class AdminDao {
         return DriverManager.getConnection(url, user, password);
     }
     
-    public utente loginAdmin(String nome, String passwordInput) {
-    String sql = "SELECT * FROM admin WHERE nome = ? AND password = ?";
+    public utente loginAdmin(String mail, String passwordInput) {
+    String sql = "SELECT * FROM admin WHERE mail = ? AND password = ?";
 
     try (Connection conn = getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
-        stmt.setString(1, nome);
+        stmt.setString(1, mail);
         stmt.setString(2, passwordInput);
 
         try (ResultSet rs = stmt.executeQuery()) {
             if (rs.next()) {
                 return new utente(
-                    -1,
-                    rs.getString("nome"),
-                    rs.getString("password")
+                    0,
+                    rs.getString("mail"),
+                    "admin"
                 );
             }
         }

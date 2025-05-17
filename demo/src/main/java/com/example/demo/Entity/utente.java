@@ -13,7 +13,7 @@ public class utente {
         return username;
     }
 
-    public String getPassword() {
+    public String getPrivilegio() {
         return privilegio;
     }
 

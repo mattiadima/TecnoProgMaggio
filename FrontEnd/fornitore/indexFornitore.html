@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Area Fornitore</title>
+  <script>
+    function controllaAccessoFornitore() {
+      const utente = JSON.parse(localStorage.getItem("utente"));
+      
+      // Se non esiste utente o non è fornitore, reindirizza
+      if (!utente || utente.privilegio !== "fornitore") {
+        alert("Accesso negato. Effettua il login come fornitore.");
+        window.location.href = "../login.html";
+      }
+    }
+
+    function vaiGestionePolizza() {
+      window.location.href = "gestionePolizza.html";
+    }
+
+    function logout() {
+      localStorage.removeItem("utente");
+      alert("Logout effettuato.");
+      window.location.href = "../login.html";
+    }
+  </script>
+</head>
+<body onload="controllaAccessoFornitore()">
+  <h1>Benvenuto nell'Area Fornitore</h1>
+  <p>Solo utenti con privilegio <strong>fornitore</strong> possono accedere a questa pagina.</p>
+
+  <button onclick="vaiGestionePolizza()">Vai a Gestione Polizza</button>
+  <button onclick="logout()">Logout</button>
+</body>
+</html>

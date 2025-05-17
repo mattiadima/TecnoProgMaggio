@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Gestione Nave</title>
+  <script>
+    function controllaAccessoAdmin() {
+      const utente = JSON.parse(localStorage.getItem("utente"));
+
+      // Se non esiste utente o non è admin, reindirizza
+      if (!utente || utente.privilegio !== "admin") {
+        alert("Accesso negato. Effettua il login come amministratore.");
+        window.location.href = "../login.html";
+      }
+    }
+
+    function inserisciNave() {
+      const nome = document.getElementById("nomeNave").value.trim();
+      const tipo = document.getElementById("tipoNave").value.trim();
+
+      if (!nome || !tipo) {
+        document.getElementById("output").textContent = "⚠️ Inserisci tutti i campi correttamente";
+        return;
+      }
+
+      const url = `http://localhost:8080/inserisci/nave?nome=${nome}&tipo=${tipo}`;
+      fetch(url)
+        .then(res => res.text())
+        .then(() => {
+          document.getElementById("output").textContent = "✅ Nave inserita.";
+        })
+        .catch(() => {
+          document.getElementById("output").textContent = "❌ Errore durante l'inserimento della nave.";
+        });
+    }
+
+    function visualizzaNavi() {
+      fetch("http://localhost:8080/visualizza/nave")
+        .then(res => res.json())
+        .then(data => {
+          if (!Array.isArray(data) || data.length === 0) {
+            document.getElementById("output").textContent = "⚠️ Nessuna nave trovata.";
+            return;
+          }
+
+          let html = "<table border='1'><tr><th>ID</th><th>Nome</th><th>Tipo</th></tr>";
+          data.forEach(nave => {
+            html += `<tr>
+              <td>${nave.id}</td>
+              <td>${nave.nome}</td>
+              <td>${nave.tipo}</td>
+            </tr>`;
+          });
+          html += "</table>";
+          document.getElementById("output").innerHTML = html;
+        })
+        .catch(() => {
+          document.getElementById("output").textContent = "❌ Errore durante la visualizzazione.";
+        });
+    }
+
+    function eliminaNave() {
+      const id = document.getElementById("idElimina").value.trim();
+
+      if (!id || isNaN(id) || parseInt(id) <= 0) {
+        document.getElementById("output").textContent = "⚠️ Inserisci un ID valido per eliminare una nave.";
+        return;
+      }
+
+      const url = `http://localhost:8080/elimina/nave?id=${id}`;
+      fetch(url)
+        .then(res => res.text())
+        .then(() => {
+          document.getElementById("output").textContent = "✅ Nave eliminata.";
+        })
+        .catch(() => {
+          document.getElementById("output").textContent = "❌ Errore durante l'eliminazione della nave.";
+        });
+    }
+
+    function tornaIndietro() {
+      window.location.href = "indexAdmin.html";
+    }
+  </script>
+</head>
+<body onload="controllaAccessoAdmin()">
+  <h2>Gestione Nave</h2>
+
+  <h3>➕ Inserisci Nave</h3>
+  Nome: <input type="text" id="nomeNave"><br>
+  Tipo: <input type="text" id="tipoNave"><br>
+  <button onclick="inserisciNave()">Inserisci</button>
+
+  <h3>📋 Visualizza Navi</h3>
+  <button onclick="visualizzaNavi()">Visualizza</button>
+
+  <h3>🗑️ Elimina Nave</h3>
+  ID: <input type="number" id="idElimina" min="1">
+  <button onclick="eliminaNave()">Elimina</button>
+
+  <br><br>
+  <button onclick="tornaIndietro()">Torna Indietro</button>
+
+  <h3>Output:</h3>
+  <div id="output"></div>
+</body>
+</html>

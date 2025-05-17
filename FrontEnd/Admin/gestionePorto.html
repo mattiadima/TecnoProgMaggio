@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Gestione Porto</title>
+  <script>
+    function controllaAccessoAdmin() {
+      const utente = JSON.parse(localStorage.getItem("utente"));
+
+      // Se non esiste utente o non è admin, reindirizza
+      if (!utente || utente.privilegio !== "admin") {
+        alert("Accesso negato. Effettua il login come amministratore.");
+        window.location.href = "../login.html";
+      }
+    }
+
+    function inserisciPorto() {
+      const nome = document.getElementById("nome").value.trim();
+      const rotta = document.getElementById("rotta").value.trim();
+      const nazione = document.getElementById("nazione").value.trim();
+
+      if (!nome || !rotta || !nazione) {
+        document.getElementById("output").textContent = "⚠️ Compila tutti i campi per inserire un porto.";
+        return;
+      }
+
+      const url = `http://localhost:8080/inserisci/porto?nome=${nome}&rotta=${rotta}&nazione=${nazione}`;
+      fetch(url)
+        .then(res => res.text())
+        .then(() => {
+          document.getElementById("output").textContent = "✅ Porto inserito.";
+        })
+        .catch(() => {
+          document.getElementById("output").textContent = "❌ Errore durante l'inserimento del porto.";
+        });
+    }
+
+    function visualizzaPorti() {
+      fetch("http://localhost:8080/visualizza/porto")
+        .then(res => res.json())
+        .then(data => {
+          if (!Array.isArray(data) || data.length === 0) {
+            document.getElementById("output").textContent = "⚠️ Nessun porto trovato.";
+            return;
+          }
+
+          let html = "<table border='1'><tr><th>ID</th><th>Nome</th><th>Rotta</th><th>Nazione</th></tr>";
+          data.forEach(porto => {
+            html += `<tr>
+              <td>${porto.id}</td>
+              <td>${porto.nome}</td>
+              <td>${porto.rotta}</td>
+              <td>${porto.nazione}</td>
+            </tr>`;
+          });
+          html += "</table>";
+          document.getElementById("output").innerHTML = html;
+        })
+        .catch(() => {
+          document.getElementById("output").textContent = "❌ Errore durante la visualizzazione.";
+        });
+    }
+
+    function eliminaPorto() {
+      const id = document.getElementById("idElimina").value.trim();
+
+      if (!id || isNaN(id) || parseInt(id) <= 0) {
+        document.getElementById("output").textContent = "⚠️ Inserisci un ID valido per eliminare un porto.";
+        return;
+      }
+
+      const url = `http://localhost:8080/elimina/porto?id=${id}`;
+      fetch(url)
+        .then(res => res.text())
+        .then(() => {
+          document.getElementById("output").textContent = "✅ Porto eliminato.";
+        })
+        .catch(() => {
+          document.getElementById("output").textContent = "❌ Errore durante l'eliminazione del porto.";
+        });
+    }
+
+    function tornaIndietro() {
+      window.location.href = "indexAdmin.html";
+    }
+  </script>
+</head>
+<body onload="controllaAccessoAdmin()">
+  <h2>Gestione Porto</h2>
+
+  <h3>➕ Inserisci Porto</h3>
+  Nome: <input type="text" id="nome"><br>
+  Rotta: <input type="text" id="rotta"><br>
+  Nazione: <input type="text" id="nazione"><br>
+  <button onclick="inserisciPorto()">Inserisci</button>
+
+  <h3>📋 Visualizza Porti</h3>
+  <button onclick="visualizzaPorti()">Visualizza</button>
+
+  <h3>🗑️ Elimina Porto</h3>
+  ID: <input type="number" id="idElimina" min="1">
+  <button onclick="eliminaPorto()">Elimina</button>
+
+  <br><br>
+  <button onclick="tornaIndietro()">Torna Indietro</button>
+
+  <h3>Output:</h3>
+  <div id="output"></div>
+</body>
+</html>

@@ -76,7 +76,7 @@ public class ClienteDao {
                     return new utente(
                         rs.getInt("ID"),
                         rs.getString("mail"),
-                        rs.getString("password")
+                        "cliente"
                     );
                 }
             }

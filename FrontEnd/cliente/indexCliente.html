@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Area Cliente</title>
+  <script>
+    function controllaAccessoCliente() {
+      const utente = JSON.parse(localStorage.getItem("utente"));
+      
+      // Se non esiste utente o non è cliente, reindirizza
+      if (!utente || utente.privilegio !== "cliente") {
+        alert("Accesso negato. Effettua il login come cliente.");
+        window.location.href = "../login.html";
+      }
+    }
+
+    function vaiA(pagina) {
+      window.location.href = pagina;
+    }
+
+    function logout() {
+      localStorage.removeItem("utente");
+      alert("Logout effettuato.");
+      window.location.href = "../login.html";
+    }
+  </script>
+</head>
+<body onload="controllaAccessoCliente()">
+  <h1>Benvenuto nell'Area Cliente</h1>
+  <p>Solo utenti con privilegio <strong>cliente</strong> possono accedere a questa pagina.</p>
+
+  <button onclick="vaiA('gestioneAutisti.html')">Vai a Autisti</button>
+  <button onclick="vaiA('gestioneBuono.html')">Vai a Buono</button>
+  <button onclick="vaiA('gestioneCamion.html')">Vai a Camion</button>
+  <button onclick="vaiA('gestioneRitiro.html')">Vai a Ritiro</button>
+  <button onclick="logout()">Logout</button>
+</body>
+</html>

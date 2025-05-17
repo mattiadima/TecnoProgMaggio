@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <title>Gestione Polizza</title>
+  <script>
+    let viaggi = [];
+    let clienti = [];
+
+    window.onload = function() {
+        controllaAccessoFornitore();
+      caricaViaggi();
+      caricaClienti();
+    };
+
+    function controllaAccessoFornitore() {
+      const utente = JSON.parse(localStorage.getItem("utente"));
+      
+      // Se non esiste utente o non è fornitore, reindirizza
+      if (!utente || utente.privilegio !== "fornitore") {
+        alert("Accesso negato. Effettua il login come fornitore.");
+        window.location.href = "../login.html";
+      }
+    }
+
+    // Carica viaggi per dropdown
+    function caricaViaggi() {
+      fetch("http://localhost:8080/visualizza/viaggio")
+        .then(res => res.json())
+        .then(data => {
+          viaggi = data;
+          const select = document.getElementById("viaggio");
+          select.innerHTML = "<option value=''>-- Seleziona Viaggio --</option>";
+          data.forEach(v => {
+            // mostra id e info viaggio, es: "ID 3 - FornitoreX -> PortoY"
+            const descrizione = `ID ${v.id} - ${v.fornitore ? v.fornitore.nome : "N/D"}: ${v.porto_p.nome} → ${v.porto_a.nome}`;
+            select.innerHTML += `<option value="${v.id}">${descrizione}</option>`;
+          });
+        })
+        .catch(() => alert("Errore nel caricamento dei viaggi."));
+    }
+
+    // Carica clienti per dropdown
+    function caricaClienti() {
+      fetch("http://localhost:8080/visualizza/cliente")
+        .then(res => res.json())
+        .then(data => {
+          clienti = data;
+          const select = document.getElementById("cliente");
+          select.innerHTML = "<option value=''>-- Seleziona Cliente --</option>";
+          data.forEach(c => {
+            const nomeCompleto = c.nome + " " + c.cognome;
+            select.innerHTML += `<option value="${c.id}">${nomeCompleto}</option>`;
+          });
+        })
+        .catch(() => alert("Errore nel caricamento dei clienti."));
+    }
+
+    // Inserisci nuova polizza
+    function inserisciPolizza() {
+      const viaggioId = document.getElementById("viaggio").value;
+      const clienteId = document.getElementById("cliente").value;
+      const peso = document.getElementById("peso").value.trim();
+      const data = document.getElementById("data").value;
+      const merce = document.getElementById("merce").value.trim();
+
+      if (!viaggioId || !clienteId || !peso || !data || !merce) {
+        document.getElementById("output").textContent = "⚠️ Compila tutti i campi.";
+        return;
+      }
+
+      // URL per inserire, modificare se il backend richiede body JSON o parametri
+      const url = `http://localhost:8080/inserisci/polizza?viaggio=${viaggioId}&cliente=${clienteId}&peso=${encodeURIComponent(peso)}&data=${encodeURIComponent(data)}&merce=${encodeURIComponent(merce)}`;
+
+      fetch(url)
+        .then(res => res.text())
+        .then(() => {
+          document.getElementById("output").textContent = "✅ Polizza inserita.";
+        })
+        .catch(() => {
+          document.getElementById("output").textContent = "❌ Errore durante l'inserimento della polizza.";
+        });
+    }
+
+    // Visualizza tutte le polizze
+    function visualizzaPolizze() {
+      fetch("http://localhost:8080/visualizza/polizza")
+        .then(res => res.json())
+        .then(data => {
+          if (!Array.isArray(data) || data.length === 0) {
+            document.getElementById("output").textContent = "⚠️ Nessuna polizza trovata.";
+            return;
+          }
+
+          let html = "<table border='1'><tr><th>ID</th><th>Viaggio</th><th>Peso</th><th>Data</th><th>Merce</th><th>Cliente</th></tr>";
+          data.forEach(polizza => {
+            const viaggioDescr = polizza.viaggio
+              ? `ID ${polizza.viaggio.id} - ${polizza.viaggio.porto_partenza} → ${polizza.viaggio.porto_arrivo}`
+              : "N/D";
+            const clienteNome = polizza.cliente
+              ? `${polizza.cliente.nome} ${polizza.cliente.cognome}`
+              : "N/D";
+
+            html += `<tr>
+              <td>${polizza.id}</td>
+              <td>${viaggioDescr}</td>
+              <td>${polizza.peso}</td>
+              <td>${polizza.data}</td>
+              <td>${polizza.merce}</td>
+              <td>${clienteNome}</td>
+            </tr>`;
+          });
+          html += "</table>";
+          document.getElementById("output").innerHTML = html;
+        })
+        .catch(() => {
+          document.getElementById("output").textContent = "❌ Errore durante la visualizzazione delle polizze.";
+        });
+    }
+
+    // Elimina polizza per ID
+    function eliminaPolizza() {
+      const id = document.getElementById("idElimina").value.trim();
+      if (!id || isNaN(id) || parseInt(id) <= 0) {
+        document.getElementById("output").textContent = "⚠️ Inserisci un ID valido per eliminare una polizza.";
+        return;
+      }
+
+      const url = `http://localhost:8080/elimina/polizza?id=${id}`;
+      fetch(url)
+        .then(res => res.text())
+        .then(() => {
+          document.getElementById("output").textContent = "✅ Polizza eliminata.";
+        })
+        .catch(() => {
+          document.getElementById("output").textContent = "❌ Errore durante l'eliminazione della polizza.";
+        });
+    }
+
+    // Torna indietro
+    function tornaIndietro() {
+      window.location.href = "indexFornitore.html";
+    }
+  </script>
+</head>
+<body>
+  <h2>Gestione Polizza</h2>
+
+  <h3>➕ Inserisci Polizza</h3>
+  Viaggio:
+  <select id="viaggio"></select><br><br>
+
+  Cliente:
+  <select id="cliente"></select><br><br>
+
+  Peso (kg): <input type="text" id="peso"><br><br>
+  Data: <input type="date" id="data"><br><br>
+  Merce: <input type="text" id="merce"><br><br>
+
+  <button onclick="inserisciPolizza()">Inserisci</button>
+
+  <h3>📋 Visualizza Polizze</h3>
+  <button onclick="visualizzaPolizze()">Visualizza</button>
+
+  <h3>🗑️ Elimina Polizza</h3>
+  ID: <input type="number" id="idElimina" min="1">
+  <button onclick="eliminaPolizza()">Elimina</button>
+
+  <br><br>
+  <button onclick="tornaIndietro()">Torna Indietro</button>
+
+  <h3>Output:</h3>
+  <div id="output"></div>
+</body>
+</html>

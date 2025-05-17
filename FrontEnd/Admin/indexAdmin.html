@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Area Admin</title>
+  <script>
+    function controllaAccessoAdmin() {
+      const utente = JSON.parse(localStorage.getItem("utente"));
+
+      // Se non esiste utente o non è admin, reindirizza
+      if (!utente || utente.privilegio !== "admin") {
+        alert("Accesso negato. Effettua il login come amministratore.");
+        window.location.href = "../login.html";
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem("utente");
+      window.location.href = "../login.html";
+    }
+
+    function vaiA(pagina) {
+      window.location.href = pagina;
+    }
+  </script>
+</head>
+<body onload="controllaAccessoAdmin()">
+  <h1>Benvenuto nell'Area Admin</h1>
+  <p>Solo utenti con privilegio <strong>admin</strong> possono accedere a questa pagina.</p>
+
+  <button onclick="vaiA('gestioneNave.html')">Gestione Nave</button>
+  <button onclick="vaiA('gestionePorto.html')">Gestione Porto</button>
+  <button onclick="vaiA('gestioneViaggio.html')">Gestione Viaggi</button>
+  <button onclick="logout()">Logout</button>
+</body>
+</html>

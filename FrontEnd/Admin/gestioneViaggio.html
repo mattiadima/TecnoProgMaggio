@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <title>Gestione Viaggio</title>
+  <script>
+
+function controllaAccessoAdmin() {
+      const utente = JSON.parse(localStorage.getItem("utente"));
+
+      // Se non esiste utente o non è admin, reindirizza
+      if (!utente || utente.privilegio !== "admin") {
+        alert("Accesso negato. Effettua il login come amministratore.");
+        window.location.href = "../login.html";
+      }
+    }
+
+    let fornitori = [];
+    let navi = [];
+    let porti = [];
+
+    window.onload = function() {
+      controllaAccessoAdmin();
+      caricaFornitori();
+      caricaNavi();
+      caricaPorti();
+    };
+
+    function caricaFornitori() {
+      fetch("http://localhost:8080/visualizza/fornitore")
+        .then(res => res.json())
+        .then(data => {
+          fornitori = data;
+          const select = document.getElementById("fornitore");
+          select.innerHTML = "<option value=''>-- Seleziona Fornitore --</option>";
+          data.forEach(f => {
+            select.innerHTML += `<option value="${f.id}">${f.nome}</option>`;
+          });
+        })
+        .catch(() => alert("Errore nel caricamento dei fornitori."));
+    }
+
+    function caricaNavi() {
+      fetch("http://localhost:8080/visualizza/nave")
+        .then(res => res.json())
+        .then(data => {
+          navi = data;
+          const select = document.getElementById("nave");
+          select.innerHTML = "<option value=''>-- Seleziona Nave --</option>";
+          data.forEach(n => {
+            select.innerHTML += `<option value="${n.id}">${n.nome}</option>`;
+          });
+        })
+        .catch(() => alert("Errore nel caricamento delle navi."));
+    }
+
+    function caricaPorti() {
+      fetch("http://localhost:8080/visualizza/porto")
+        .then(res => res.json())
+        .then(data => {
+          porti = data;
+          const selectPartenza = document.getElementById("portoPartenza");
+          const selectArrivo = document.getElementById("portoArrivo");
+          selectPartenza.innerHTML = "<option value=''>-- Seleziona Porto Partenza --</option>";
+          selectArrivo.innerHTML = "<option value=''>-- Seleziona Porto Arrivo --</option>";
+          data.forEach(p => {
+            selectPartenza.innerHTML += `<option value="${p.id}">${p.nome} (${p.nazione})</option>`;
+            selectArrivo.innerHTML += `<option value="${p.id}">${p.nome} (${p.nazione})</option>`;
+          });
+        })
+        .catch(() => alert("Errore nel caricamento dei porti."));
+    }
+
+    function inserisciViaggio() {
+      const fornitoreId = document.getElementById("fornitore").value;
+      const naveId = document.getElementById("nave").value;
+      const portoPartenza = document.getElementById("portoPartenza").value;
+      const portoArrivo = document.getElementById("portoArrivo").value;
+      const dataPartenza = document.getElementById("dataPartenza").value;
+      const dataArrivo = document.getElementById("dataArrivo").value;
+
+      if (!fornitoreId || !naveId || !portoPartenza || !portoArrivo || !dataPartenza || !dataArrivo) {
+        document.getElementById("output").textContent = "⚠️ Compila tutti i campi.";
+        return;
+      }
+
+      const url = `http://localhost:8080/inserisci/viaggio?fornitore=${fornitoreId}&portoPartenza=${portoPartenza}&portoArrivo=${portoArrivo}&dataPartenza=${encodeURIComponent(dataPartenza)}&dataArrivo=${encodeURIComponent(dataArrivo)}&nave=${naveId}`;
+
+      fetch(url)
+        .then(res => res.text())
+        .then(() => {
+          document.getElementById("output").textContent = "✅ Viaggio inserito.";
+        })
+        .catch(() => {
+          document.getElementById("output").textContent = "❌ Errore durante l'inserimento del viaggio.";
+        });
+    }
+
+    function visualizzaViaggi() {
+      fetch("http://localhost:8080/visualizza/viaggio")
+        .then(res => res.json())
+        .then(data => {
+          if (!Array.isArray(data) || data.length === 0) {
+            document.getElementById("output").textContent = "⚠️ Nessun viaggio trovato.";
+            return;
+          }
+
+          let html = "<table border='1'><tr><th>ID</th><th>Fornitore</th><th>Porto Partenza</th><th>Porto Arrivo</th><th>Data Partenza</th><th>Data Arrivo</th><th>Nave</th></tr>";
+          data.forEach(viaggio => {
+            const nomeFornitore = viaggio.fornitore ? viaggio.fornitore.nome : "N/D";
+            const nomeNave = viaggio.nave ? viaggio.nave.nome : "N/D";
+
+            html += `<tr>
+                <td>${viaggio.id}</td>
+                <td>${nomeFornitore}</td>
+                <td>${viaggio.porto_p.nome}</td>
+                <td>${viaggio.porto_a.nome}</td>
+                <td>${viaggio.data_p}</td>
+                <td>${viaggio.data_a}</td>
+                <td>${nomeNave}</td>
+              </tr>`;
+          });
+          html += "</table>";
+          document.getElementById("output").innerHTML = html;
+        })
+        .catch(() => {
+          document.getElementById("output").textContent = "❌ Errore durante la visualizzazione.";
+        });
+    }
+
+    function eliminaViaggio() {
+      const id = document.getElementById("idElimina").value.trim();
+      if (!id || isNaN(id) || parseInt(id) <= 0) {
+        document.getElementById("output").textContent = "⚠️ Inserisci un ID valido per eliminare un viaggio.";
+        return;
+      }
+
+      const url = `http://localhost:8080/elimina/viaggio?id=${id}`;
+      fetch(url)
+        .then(res => res.text())
+        .then(() => {
+          document.getElementById("output").textContent = "✅ Viaggio eliminato.";
+        })
+        .catch(() => {
+          document.getElementById("output").textContent = "❌ Errore durante l'eliminazione del viaggio.";
+        });
+    }
+
+    function tornaIndietro() {
+      window.location.href = "indexAdmin.html";
+    }
+  </script>
+</head>
+<body>
+  <h2>Gestione Viaggio</h2>
+
+  <h3>➕ Inserisci Viaggio</h3>
+  Fornitore:
+  <select id="fornitore"></select><br><br>
+
+  Porto Partenza:
+  <select id="portoPartenza"></select><br><br>
+
+  Porto Arrivo:
+  <select id="portoArrivo"></select><br><br>
+
+  Data Partenza: <input type="date" id="dataPartenza"><br><br>
+  Data Arrivo: <input type="date" id="dataArrivo"><br><br>
+
+  Nave:
+  <select id="nave"></select><br><br>
+
+  <button onclick="inserisciViaggio()">Inserisci</button>
+
+  <h3>📋 Visualizza Viaggi</h3>
+  <button onclick="visualizzaViaggi()">Visualizza</button>
+
+  <h3>🗑️ Elimina Viaggio</h3>
+  ID: <input type="number" id="idElimina" min="1">
+  <button onclick="eliminaViaggio()">Elimina</button>
+
+  <br><br>
+  <button onclick="tornaIndietro()">Torna Indietro</button>
+
+  <h3>Output:</h3>
+  <div id="output"></div>
+</body>
+</html>
