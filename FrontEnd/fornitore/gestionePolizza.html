@@ -3,27 +3,26 @@
 <head>
   <meta charset="UTF-8" />
   <title>Gestione Polizza</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
   <script>
     let viaggi = [];
     let clienti = [];
 
     window.onload = function() {
-        controllaAccessoFornitore();
+      controllaAccessoFornitore();
       caricaViaggi();
       caricaClienti();
     };
 
     function controllaAccessoFornitore() {
       const utente = JSON.parse(localStorage.getItem("utente"));
-      
-      // Se non esiste utente o non è fornitore, reindirizza
       if (!utente || utente.privilegio !== "fornitore") {
         alert("Accesso negato. Effettua il login come fornitore.");
         window.location.href = "../login.html";
       }
     }
 
-    // Carica viaggi per dropdown
     function caricaViaggi() {
       fetch("http://localhost:8080/visualizza/viaggio")
         .then(res => res.json())
@@ -32,7 +31,6 @@
           const select = document.getElementById("viaggio");
           select.innerHTML = "<option value=''>-- Seleziona Viaggio --</option>";
           data.forEach(v => {
-            // mostra id e info viaggio, es: "ID 3 - FornitoreX -> PortoY"
             const descrizione = `ID ${v.id} - ${v.fornitore ? v.fornitore.nome : "N/D"}: ${v.porto_p.nome} → ${v.porto_a.nome}`;
             select.innerHTML += `<option value="${v.id}">${descrizione}</option>`;
           });
@@ -40,7 +38,6 @@
         .catch(() => alert("Errore nel caricamento dei viaggi."));
     }
 
-    // Carica clienti per dropdown
     function caricaClienti() {
       fetch("http://localhost:8080/visualizza/cliente")
         .then(res => res.json())
@@ -56,7 +53,6 @@
         .catch(() => alert("Errore nel caricamento dei clienti."));
     }
 
-    // Inserisci nuova polizza
     function inserisciPolizza() {
       const viaggioId = document.getElementById("viaggio").value;
       const clienteId = document.getElementById("cliente").value;
@@ -69,7 +65,6 @@
         return;
       }
 
-      // URL per inserire, modificare se il backend richiede body JSON o parametri
       const url = `http://localhost:8080/inserisci/polizza?viaggio=${viaggioId}&cliente=${clienteId}&peso=${encodeURIComponent(peso)}&data=${encodeURIComponent(data)}&merce=${encodeURIComponent(merce)}`;
 
       fetch(url)
@@ -82,7 +77,6 @@
         });
     }
 
-    // Visualizza tutte le polizze
     function visualizzaPolizze() {
       fetch("http://localhost:8080/visualizza/polizza")
         .then(res => res.json())
@@ -92,7 +86,13 @@
             return;
           }
 
-          let html = "<table border='1'><tr><th>ID</th><th>Viaggio</th><th>Peso</th><th>Data</th><th>Merce</th><th>Cliente</th></tr>";
+          let html = `<table class="table table-bordered table-striped table-hover">
+            <thead class="table-dark">
+              <tr>
+                <th>ID</th><th>Viaggio</th><th>Peso</th><th>Data</th><th>Merce</th><th>Cliente</th>
+              </tr>
+            </thead>
+            <tbody>`;
           data.forEach(polizza => {
             const viaggioDescr = polizza.viaggio
               ? `ID ${polizza.viaggio.id} - ${polizza.viaggio.porto_partenza} → ${polizza.viaggio.porto_arrivo}`
@@ -110,7 +110,7 @@
               <td>${clienteNome}</td>
             </tr>`;
           });
-          html += "</table>";
+          html += "</tbody></table>";
           document.getElementById("output").innerHTML = html;
         })
         .catch(() => {
@@ -118,7 +118,6 @@
         });
     }
 
-    // Elimina polizza per ID
     function eliminaPolizza() {
       const id = document.getElementById("idElimina").value.trim();
       if (!id || isNaN(id) || parseInt(id) <= 0) {
@@ -137,39 +136,63 @@
         });
     }
 
-    // Torna indietro
     function tornaIndietro() {
       window.location.href = "indexFornitore.html";
     }
   </script>
 </head>
-<body>
-  <h2>Gestione Polizza</h2>
+<body class="bg-light">
+  <div class="container py-4">
+    <h2 class="mb-4">Gestione Polizza</h2>
 
-  <h3>➕ Inserisci Polizza</h3>
-  Viaggio:
-  <select id="viaggio"></select><br><br>
+    <h3>➕ Inserisci Polizza</h3>
+    <form onsubmit="event.preventDefault(); inserisciPolizza();">
+      <div class="mb-3">
+        <label for="viaggio" class="form-label">Viaggio:</label>
+        <select id="viaggio" class="form-select"></select>
+      </div>
 
-  Cliente:
-  <select id="cliente"></select><br><br>
+      <div class="mb-3">
+        <label for="cliente" class="form-label">Cliente:</label>
+        <select id="cliente" class="form-select"></select>
+      </div>
 
-  Peso (kg): <input type="text" id="peso"><br><br>
-  Data: <input type="date" id="data"><br><br>
-  Merce: <input type="text" id="merce"><br><br>
+      <div class="mb-3">
+        <label for="peso" class="form-label">Peso (kg):</label>
+        <input type="text" id="peso" class="form-control" />
+      </div>
 
-  <button onclick="inserisciPolizza()">Inserisci</button>
+      <div class="mb-3">
+        <label for="data" class="form-label">Data:</label>
+        <input type="date" id="data" class="form-control" />
+      </div>
 
-  <h3>📋 Visualizza Polizze</h3>
-  <button onclick="visualizzaPolizze()">Visualizza</button>
+      <div class="mb-3">
+        <label for="merce" class="form-label">Merce:</label>
+        <input type="text" id="merce" class="form-control" />
+      </div>
 
-  <h3>🗑️ Elimina Polizza</h3>
-  ID: <input type="number" id="idElimina" min="1">
-  <button onclick="eliminaPolizza()">Elimina</button>
+      <button type="submit" class="btn btn-success">Inserisci</button>
+    </form>
 
-  <br><br>
-  <button onclick="tornaIndietro()">Torna Indietro</button>
+    <hr>
 
-  <h3>Output:</h3>
-  <div id="output"></div>
+    <h3>📋 Visualizza Polizze</h3>
+    <button onclick="visualizzaPolizze()" class="btn btn-primary mb-3">Visualizza</button>
+
+    <h3>🗑️ Elimina Polizza</h3>
+    <div class="input-group mb-3" style="max-width: 300px;">
+      <input type="number" id="idElimina" min="1" class="form-control" placeholder="ID polizza" />
+      <button onclick="eliminaPolizza()" class="btn btn-danger">Elimina</button>
+    </div>
+
+    <button onclick="tornaIndietro()" class="btn btn-secondary mt-3">Torna Indietro</button>
+
+    <h3 class="mt-4">Output:</h3>
+    <div id="output" class="mt-2"></div>
+  </div>
+
+  <!-- Bootstrap JS Bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
