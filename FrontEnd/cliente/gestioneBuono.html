@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Gestione Buono</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <script>
         let polizze = [];
 
@@ -22,13 +23,12 @@
                 .then(data => {
                     polizze = data;
                     const select = document.getElementById("polizzaBuono");
-                    select.innerHTML = ""; // svuota prima
+                    select.innerHTML = "";
                     if (polizze.length === 0) {
                         select.innerHTML = "<option value=''>Nessuna polizza disponibile</option>";
                         return;
                     }
                     polizze.forEach(p => {
-                        // Assumiamo che ogni polizza abbia id e nome (modifica se necessario)
                         const option = document.createElement("option");
                         option.value = p.id;
                         option.textContent = p.nome || `Polizza ${p.id}`;
@@ -71,20 +71,19 @@
                         return;
                     }
 
-                    let html = "<table border='1'><tr><th>ID</th><th>Data</th><th>Polizza</th><th>Peso</th></tr>";
-                        data.forEach(buono => {
-                                const polizzaObj = polizze.find(p => p.ID == buono.polizza.id);
-                                const polizzaId = polizzaObj ? polizzaObj.ID : "N/D";
+                    let html = `<div class="table-responsive"><table class="table table-bordered table-striped mt-3"><thead class="table-dark"><tr><th>ID</th><th>Data</th><th>Polizza</th><th>Peso</th></tr></thead><tbody>`;
+                    data.forEach(buono => {
+                        const polizzaObj = polizze.find(p => p.ID == buono.polizza.id);
+                        const polizzaId = polizzaObj ? polizzaObj.ID : "N/D";
 
-                                html += `<tr>
-                                    <td>${buono.id}</td>
-                                    <td>${buono.data}</td>
-                                    <td>${polizzaId}</td>
-                                    <td>${buono.peso}</td>
-                                </tr>`;
-                                });
-
-                    html += "</table>";
+                        html += `<tr>
+                            <td>${buono.id}</td>
+                            <td>${buono.data}</td>
+                            <td>${polizzaId}</td>
+                            <td>${buono.peso}</td>
+                        </tr>`;
+                    });
+                    html += "</tbody></table></div>";
                     document.getElementById("output").innerHTML = html;
                 })
                 .catch(() => {
@@ -122,30 +121,48 @@
     </script>
 </head>
 
-<body>
-    <h2>Gestione Buono</h2>
+<body class="container py-5">
+    <h2 class="mb-4 text-center">Gestione Buono</h2>
 
-    <h3>➕ Inserisci Buono</h3>
-    Data: <input type="date" id="dataBuono"><br>
-    Polizza:
-    <select id="polizzaBuono">
-        <option>Caricamento...</option>
-    </select><br>
-    Peso: <input type="number" id="pesoBuono" step="0.50" min="1"><br>
-    <button onclick="inserisciBuono()">Inserisci</button>
+    <div class="mb-4">
+        <h4>➕ Inserisci Buono</h4>
+        <div class="mb-3">
+            <label for="dataBuono" class="form-label">Data:</label>
+            <input type="date" id="dataBuono" class="form-control">
+        </div>
+        <div class="mb-3">
+            <label for="polizzaBuono" class="form-label">Polizza:</label>
+            <select id="polizzaBuono" class="form-select">
+                <option>Caricamento...</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="pesoBuono" class="form-label">Peso:</label>
+            <input type="number" id="pesoBuono" step="0.50" min="1" class="form-control">
+        </div>
+        <button onclick="inserisciBuono()" class="btn btn-success">Inserisci</button>
+    </div>
 
-    <h3>📋 Visualizza Buoni</h3>
-    <button onclick="visualizzaBuoni()">Visualizza</button>
+    <div class="mb-4">
+        <h4>📋 Visualizza Buoni</h4>
+        <button onclick="visualizzaBuoni()" class="btn btn-primary">Visualizza</button>
+    </div>
 
-    <h3>🗑️ Elimina Buono</h3>
-    ID: <input type="number" id="idElimina" min="1">
-    <button onclick="eliminaBuono()">Elimina</button>
+    <div class="mb-4">
+        <h4>🗑️ Elimina Buono</h4>
+        <div class="mb-3">
+            <label for="idElimina" class="form-label">ID:</label>
+            <input type="number" id="idElimina" min="1" class="form-control">
+        </div>
+        <button onclick="eliminaBuono()" class="btn btn-danger">Elimina</button>
+    </div>
 
-    <br><br>
-    <button onclick="tornaIndietro()">Torna Indietro</button>
+    <div class="mb-4">
+        <button onclick="tornaIndietro()" class="btn btn-secondary">Torna Indietro</button>
+    </div>
 
-    <h3>Output:</h3>
-    <div id="output"></div>
+    <h4>Output:</h4>
+    <div id="output" class="mt-3"></div>
 </body>
 
 </html>

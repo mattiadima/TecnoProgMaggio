@@ -38,7 +38,7 @@ public class AdminDao {
         e.printStackTrace();
     }
 
-    return null; // Login fallito
+    return null; 
 }
 
 }

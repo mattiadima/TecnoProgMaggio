@@ -3,11 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <title>Gestione Nave</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <script>
     function controllaAccessoAdmin() {
       const utente = JSON.parse(localStorage.getItem("utente"));
-
-      // Se non esiste utente o non è admin, reindirizza
       if (!utente || utente.privilegio !== "admin") {
         alert("Accesso negato. Effettua il login come amministratore.");
         window.location.href = "../login.html";
@@ -17,12 +16,10 @@
     function inserisciNave() {
       const nome = document.getElementById("nomeNave").value.trim();
       const tipo = document.getElementById("tipoNave").value.trim();
-
       if (!nome || !tipo) {
         document.getElementById("output").textContent = "⚠️ Inserisci tutti i campi correttamente";
         return;
       }
-
       const url = `http://localhost:8080/inserisci/nave?nome=${nome}&tipo=${tipo}`;
       fetch(url)
         .then(res => res.text())
@@ -42,8 +39,7 @@
             document.getElementById("output").textContent = "⚠️ Nessuna nave trovata.";
             return;
           }
-
-          let html = "<table border='1'><tr><th>ID</th><th>Nome</th><th>Tipo</th></tr>";
+          let html = "<table class='table table-bordered mt-3'><thead class='table-light'><tr><th>ID</th><th>Nome</th><th>Tipo</th></tr></thead><tbody>";
           data.forEach(nave => {
             html += `<tr>
               <td>${nave.id}</td>
@@ -51,7 +47,7 @@
               <td>${nave.tipo}</td>
             </tr>`;
           });
-          html += "</table>";
+          html += "</tbody></table>";
           document.getElementById("output").innerHTML = html;
         })
         .catch(() => {
@@ -61,12 +57,10 @@
 
     function eliminaNave() {
       const id = document.getElementById("idElimina").value.trim();
-
       if (!id || isNaN(id) || parseInt(id) <= 0) {
         document.getElementById("output").textContent = "⚠️ Inserisci un ID valido per eliminare una nave.";
         return;
       }
-
       const url = `http://localhost:8080/elimina/nave?id=${id}`;
       fetch(url)
         .then(res => res.text())
@@ -83,25 +77,46 @@
     }
   </script>
 </head>
-<body onload="controllaAccessoAdmin()">
-  <h2>Gestione Nave</h2>
+<body onload="controllaAccessoAdmin()" class="bg-light">
+  <div class="container py-5">
+    <div class="card shadow">
+      <div class="card-body">
+        <h2 class="card-title text-center mb-4">Gestione Nave</h2>
 
-  <h3>➕ Inserisci Nave</h3>
-  Nome: <input type="text" id="nomeNave"><br>
-  Tipo: <input type="text" id="tipoNave"><br>
-  <button onclick="inserisciNave()">Inserisci</button>
+        <div class="mb-4">
+          <h4>➕ Inserisci Nave</h4>
+          <div class="mb-3">
+            <label class="form-label">Nome</label>
+            <input type="text" class="form-control" id="nomeNave">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Tipo</label>
+            <input type="text" class="form-control" id="tipoNave">
+          </div>
+          <button class="btn btn-success" onclick="inserisciNave()">Inserisci</button>
+        </div>
 
-  <h3>📋 Visualizza Navi</h3>
-  <button onclick="visualizzaNavi()">Visualizza</button>
+        <div class="mb-4">
+          <h4>📋 Visualizza Navi</h4>
+          <button class="btn btn-primary" onclick="visualizzaNavi()">Visualizza</button>
+        </div>
 
-  <h3>🗑️ Elimina Nave</h3>
-  ID: <input type="number" id="idElimina" min="1">
-  <button onclick="eliminaNave()">Elimina</button>
+        <div class="mb-4">
+          <h4>🗑️ Elimina Nave</h4>
+          <div class="input-group">
+            <input type="number" class="form-control" id="idElimina" min="1" placeholder="ID">
+            <button class="btn btn-danger" onclick="eliminaNave()">Elimina</button>
+          </div>
+        </div>
 
-  <br><br>
-  <button onclick="tornaIndietro()">Torna Indietro</button>
+        <div class="mb-4">
+          <button class="btn btn-secondary" onclick="tornaIndietro()">Torna Indietro</button>
+        </div>
 
-  <h3>Output:</h3>
-  <div id="output"></div>
+        <h4>Output:</h4>
+        <div id="output" class="mt-3"></div>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

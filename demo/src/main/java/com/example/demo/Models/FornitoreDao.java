@@ -81,7 +81,7 @@ public class FornitoreDao {
         e.printStackTrace();
     }
 
-    return null; // Login fallito
+    return null; 
 }
 
 }

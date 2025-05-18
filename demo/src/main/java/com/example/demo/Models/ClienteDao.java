@@ -84,7 +84,7 @@ public class ClienteDao {
             e.printStackTrace();
         }
     
-        return null; // Login fallito
+        return null; 
     }
     
 }

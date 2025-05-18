@@ -3,23 +3,19 @@
 <head>
   <meta charset="UTF-8" />
   <title>Gestione Viaggio</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <script>
-
-function controllaAccessoAdmin() {
+    function controllaAccessoAdmin() {
       const utente = JSON.parse(localStorage.getItem("utente"));
-
-      // Se non esiste utente o non è admin, reindirizza
       if (!utente || utente.privilegio !== "admin") {
         alert("Accesso negato. Effettua il login come amministratore.");
         window.location.href = "../login.html";
       }
     }
 
-    let fornitori = [];
-    let navi = [];
-    let porti = [];
+    let fornitori = [], navi = [], porti = [];
 
-    window.onload = function() {
+    window.onload = function () {
       controllaAccessoAdmin();
       caricaFornitori();
       caricaNavi();
@@ -30,12 +26,9 @@ function controllaAccessoAdmin() {
       fetch("http://localhost:8080/visualizza/fornitore")
         .then(res => res.json())
         .then(data => {
-          fornitori = data;
           const select = document.getElementById("fornitore");
           select.innerHTML = "<option value=''>-- Seleziona Fornitore --</option>";
-          data.forEach(f => {
-            select.innerHTML += `<option value="${f.id}">${f.nome}</option>`;
-          });
+          data.forEach(f => select.innerHTML += `<option value="${f.id}">${f.nome}</option>`);
         })
         .catch(() => alert("Errore nel caricamento dei fornitori."));
     }
@@ -44,12 +37,9 @@ function controllaAccessoAdmin() {
       fetch("http://localhost:8080/visualizza/nave")
         .then(res => res.json())
         .then(data => {
-          navi = data;
           const select = document.getElementById("nave");
           select.innerHTML = "<option value=''>-- Seleziona Nave --</option>";
-          data.forEach(n => {
-            select.innerHTML += `<option value="${n.id}">${n.nome}</option>`;
-          });
+          data.forEach(n => select.innerHTML += `<option value="${n.id}">${n.nome}</option>`);
         })
         .catch(() => alert("Errore nel caricamento delle navi."));
     }
@@ -58,14 +48,14 @@ function controllaAccessoAdmin() {
       fetch("http://localhost:8080/visualizza/porto")
         .then(res => res.json())
         .then(data => {
-          porti = data;
-          const selectPartenza = document.getElementById("portoPartenza");
-          const selectArrivo = document.getElementById("portoArrivo");
-          selectPartenza.innerHTML = "<option value=''>-- Seleziona Porto Partenza --</option>";
-          selectArrivo.innerHTML = "<option value=''>-- Seleziona Porto Arrivo --</option>";
+          const partenza = document.getElementById("portoPartenza");
+          const arrivo = document.getElementById("portoArrivo");
+          partenza.innerHTML = "<option value=''>-- Seleziona Porto Partenza --</option>";
+          arrivo.innerHTML = "<option value=''>-- Seleziona Porto Arrivo --</option>";
           data.forEach(p => {
-            selectPartenza.innerHTML += `<option value="${p.id}">${p.nome} (${p.nazione})</option>`;
-            selectArrivo.innerHTML += `<option value="${p.id}">${p.nome} (${p.nazione})</option>`;
+            const option = `<option value="${p.id}">${p.nome} (${p.nazione})</option>`;
+            partenza.innerHTML += option;
+            arrivo.innerHTML += option;
           });
         })
         .catch(() => alert("Errore nel caricamento dei porti."));
@@ -105,22 +95,36 @@ function controllaAccessoAdmin() {
             return;
           }
 
-          let html = "<table border='1'><tr><th>ID</th><th>Fornitore</th><th>Porto Partenza</th><th>Porto Arrivo</th><th>Data Partenza</th><th>Data Arrivo</th><th>Nave</th></tr>";
-          data.forEach(viaggio => {
-            const nomeFornitore = viaggio.fornitore ? viaggio.fornitore.nome : "N/D";
-            const nomeNave = viaggio.nave ? viaggio.nave.nome : "N/D";
+          let html = `
+            <div class="table-responsive mt-3">
+              <table class="table table-bordered">
+                <thead class="table-light">
+                  <tr>
+                    <th>ID</th>
+                    <th>Fornitore</th>
+                    <th>Porto Partenza</th>
+                    <th>Porto Arrivo</th>
+                    <th>Data Partenza</th>
+                    <th>Data Arrivo</th>
+                    <th>Nave</th>
+                  </tr>
+                </thead>
+                <tbody>`;
 
-            html += `<tr>
+          data.forEach(viaggio => {
+            html += `
+              <tr>
                 <td>${viaggio.id}</td>
-                <td>${nomeFornitore}</td>
-                <td>${viaggio.porto_p.nome}</td>
-                <td>${viaggio.porto_a}</td>
+                <td>${viaggio.fornitore?.nome || 'N/D'}</td>
+                <td>${viaggio.porto_p?.nome || 'N/D'}</td>
+                <td>${viaggio.porto_a?.nome || 'N/D'}</td>
                 <td>${viaggio.data_p}</td>
                 <td>${viaggio.data_a}</td>
-                <td>${nomeNave}</td>
+                <td>${viaggio.nave?.nome || 'N/D'}</td>
               </tr>`;
           });
-          html += "</table>";
+
+          html += `</tbody></table></div>`;
           document.getElementById("output").innerHTML = html;
         })
         .catch(() => {
@@ -151,38 +155,54 @@ function controllaAccessoAdmin() {
     }
   </script>
 </head>
-<body>
-  <h2>Gestione Viaggio</h2>
+<body class="bg-light">
+  <div class="container py-5">
+    <div class="card shadow">
+      <div class="card-body">
+        <h2 class="card-title text-center mb-4">Gestione Viaggio</h2>
 
-  <h3>➕ Inserisci Viaggio</h3>
-  Fornitore:
-  <select id="fornitore"></select><br><br>
+        <h4>➕ Inserisci Viaggio</h4>
+        <div class="mb-3">
+          <label class="form-label">Fornitore</label>
+          <select class="form-select" id="fornitore"></select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Porto Partenza</label>
+          <select class="form-select" id="portoPartenza"></select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Porto Arrivo</label>
+          <select class="form-select" id="portoArrivo"></select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Data Partenza</label>
+          <input type="date" class="form-control" id="dataPartenza">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Data Arrivo</label>
+          <input type="date" class="form-control" id="dataArrivo">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Nave</label>
+          <select class="form-select" id="nave"></select>
+        </div>
+        <button class="btn btn-success mb-4" onclick="inserisciViaggio()">Inserisci</button>
 
-  Porto Partenza:
-  <select id="portoPartenza"></select><br><br>
+        <h4>📋 Visualizza Viaggi</h4>
+        <button class="btn btn-primary mb-4" onclick="visualizzaViaggi()">Visualizza</button>
 
-  Porto Arrivo:
-  <select id="portoArrivo"></select><br><br>
+        <h4>🗑️ Elimina Viaggio</h4>
+        <div class="input-group mb-4">
+          <input type="number" class="form-control" id="idElimina" placeholder="ID" min="1">
+          <button class="btn btn-danger" onclick="eliminaViaggio()">Elimina</button>
+        </div>
 
-  Data Partenza: <input type="date" id="dataPartenza"><br><br>
-  Data Arrivo: <input type="date" id="dataArrivo"><br><br>
+        <button class="btn btn-secondary" onclick="tornaIndietro()">Torna Indietro</button>
 
-  Nave:
-  <select id="nave"></select><br><br>
-
-  <button onclick="inserisciViaggio()">Inserisci</button>
-
-  <h3>📋 Visualizza Viaggi</h3>
-  <button onclick="visualizzaViaggi()">Visualizza</button>
-
-  <h3>🗑️ Elimina Viaggio</h3>
-  ID: <input type="number" id="idElimina" min="1">
-  <button onclick="eliminaViaggio()">Elimina</button>
-
-  <br><br>
-  <button onclick="tornaIndietro()">Torna Indietro</button>
-
-  <h3>Output:</h3>
-  <div id="output"></div>
+        <h4 class="mt-4">Output:</h4>
+        <div id="output" class="mt-2"></div>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
